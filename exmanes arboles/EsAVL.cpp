@@ -1,8 +1,15 @@
+#include <iostream>
+#include "abin.h"
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
+
 template <typename T>
 bool esAVLRec(const Abin<T>& A,
               typename Abin<T>::nodo n,
-              const T* minimo,
-              const T* maximo,
+              const T* min,
+              const T* max,
               int& altura)
 {
     if (n == Abin<T>::NODO_NULO)
@@ -13,21 +20,31 @@ bool esAVLRec(const Abin<T>& A,
 
     T e = A.elemento(n);
 
-    if ((minimo != nullptr && e <= *minimo) ||
-        (maximo != nullptr && e >= *maximo))
+    if ((min != nullptr && e <= *min) ||
+        (max != nullptr && e >= *max))
+    {
         return false;
+    }
 
-    int alturaIzq, alturaDer;
+    int alturaIzq;
+    int alturaDer;
 
-    if (!esAVLRec(A, A.hijoIzqdo(n),
-                  minimo, &e, alturaIzq))
-        return false;
+    bool izq = esAVLRec(A, A.hijoIzqdo(n), min, &e, alturaIzq);
 
-    if (!esAVLRec(A, A.hijoDrcho(n),
-                  &e, maximo, alturaDer))
-        return false;
+    bool der = esAVLRec(A, A.hijoDrcho(n), &e, max, alturaDer);
 
-    altura = 1 + std::max(alturaIzq, alturaDer);
+    altura = 1 + max(alturaIzq, alturaDer);
 
-    return std::abs(alturaIzq - alturaDer) <= 1;
+    return izq && der && abs(alturaIzq - alturaDer) <= 1;
+}
+
+template <typename T>
+bool esAVL(const Abin<T>& A)
+{
+    if (A.vacio())
+        return true;
+
+    int altura = 0;
+
+    return esAVLRec(A,A.raiz(),nullptr,nullptr,altura);
 }
